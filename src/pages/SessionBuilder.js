@@ -38,7 +38,7 @@ export default function SessionBuilder() {
     const userPrompt = "Build a complete training session for this athlete. Return ONLY a JSON object with this exact structure: {sessionTitle: string, sessionFocus: string, rationale: string, blocks: [{blockName: string, blockColor: string (one of: amber blue green red purple gray), exercises: [{name: string, sets: string, reps: string, load: string, tempo: string, intensity: string, rpe: string, rest: string, cue: string}]}]}. Athlete: " + selectedClient.full_name + ". Category: " + selectedClient.category + ". Sport: " + (selectedClient.sport || 'General') + ". Training age: " + (selectedClient.training_age || 'Unknown') + " years. Current program: " + (activeProgram ? activeProgram.method : 'No active program') + ". Phase: " + (activeProgram ? activeProgram.phase : 'General training') + ". Goal: " + (selectedClient.goal || 'General fitness') + ". Injury history: " + (selectedClient.injury_history || 'None') + ". Strength level: " + (selectedClient.strength_level || 'Intermediate') + ". Movement quality: " + (selectedClient.movement_quality || 'Good') + ". Day: " + getDayLabel(selectedDay) + ". Build 3-5 blocks appropriate for this athlete and phase. Make it completely specific to this individual."
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/.netlify/functions/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
