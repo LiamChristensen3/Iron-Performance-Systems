@@ -13,9 +13,10 @@ function ProfileContent({ client, onBack }) {
     notes: ''
   })
 
-  useEffect(() => {
-    fetchClientData()
-  }, [client.id])
+ useEffect(() => {
+  fetchClientData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [client.id])
 
   async function fetchClientData() {
     setLoading(true)

@@ -90,7 +90,7 @@ export default function SessionBuilder() {
   function getInitials(name) {
     return name.split(' ').map(function(n) { return n[0] }).join('').substring(0, 2).toUpperCase()
   }
-
+// eslint-disable-next-line no-unused-vars
   const colorMap = {
     amber: 'bg-amber-950 text-amber-400',
     blue: 'bg-blue-950 text-blue-400',

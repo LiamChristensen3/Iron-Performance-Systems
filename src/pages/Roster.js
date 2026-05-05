@@ -8,8 +8,9 @@ export default function Roster({ team, onBack, onSelectClient }) {
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('roster')
 
-  useEffect(() => {
+useEffect(() => {
     fetchAthletes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team.id])
 
   async function fetchAthletes() {
