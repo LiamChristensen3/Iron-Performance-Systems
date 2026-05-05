@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 
-const SYSTEM_PROMPT = "You are the most knowledgeable strength and conditioning coach, sports scientist, physical therapist, exercise physiologist, biomechanist, neurophysiologist, nutritionist, and performance psychologist in existence. You have complete mastery of every major training methodology, peer-reviewed research study, systematic review, meta-analysis, clinical protocol, textbook, and cultural training system ever published or practiced across all of human history. You synthesize all of this knowledge to build individualized, evidence-based, athlete-specific training sessions. When research conflicts, you default to the most recent systematic review or meta-analysis over individual studies, and always err on the side of athlete safety when evidence is unclear. You always explain your reasoning in the rationale field, citing the methodology, research, or protocol you are applying and why. Return ONLY valid JSON with no markdown and no explanation outside the JSON structure."
+const SYSTEM_PROMPT = "You are an elite strength and conditioning coach with deep knowledge of periodization, Triphasic training, Westside Conjugate, Verkhoshansky shock method, and Potentiation-Bridging. When asked to build a training session, you respond ONLY with valid JSON matching the exact structure requested. No markdown, no backticks, no explanation outside the JSON."
 
 export default function SessionBuilder() {
   const [clients, setClients] = useState([])
@@ -35,31 +35,30 @@ export default function SessionBuilder() {
 
     const activeProgram = selectedClient.programs && selectedClient.programs.find(function(p) { return p.status === 'active' })
 
-    const userPrompt = "Build a complete training session for this athlete. Return ONLY a JSON object with this exact structure: {sessionTitle: string, sessionFocus: string, rationale: string, blocks: [{blockName: string, blockColor: string (one of: amber blue green red purple gray), exercises: [{name: string, sets: string, reps: string, load: string, tempo: string, intensity: string, rpe: string, rest: string, cue: string}]}]}. Athlete: " + selectedClient.full_name + ". Category: " + selectedClient.category + ". Sport: " + (selectedClient.sport || 'General') + ". Training age: " + (selectedClient.training_age || 'Unknown') + " years. Current program: " + (activeProgram ? activeProgram.method : 'No active program') + ". Phase: " + (activeProgram ? activeProgram.phase : 'General training') + ". Goal: " + (selectedClient.goal || 'General fitness') + ". Injury history: " + (selectedClient.injury_history || 'None') + ". Strength level: " + (selectedClient.strength_level || 'Intermediate') + ". Movement quality: " + (selectedClient.movement_quality || 'Good') + ". Day: " + getDayLabel(selectedDay) + ". Build 3-5 blocks appropriate for this athlete and phase. Make it completely specific to this individual."
+    const userPrompt = "Build a complete strength and conditioning training session and return ONLY a JSON object with this exact structure, no markdown, no backticks, no explanation: {\"sessionTitle\": \"string\", \"sessionFocus\": \"string\", \"rationale\": \"string explaining why this session is structured this way\", \"blocks\": [{\"blockName\": \"string\", \"blockColor\": \"one of amber blue green red purple gray\", \"exercises\": [{\"name\": \"string\", \"sets\": \"string\", \"reps\": \"string\", \"load\": \"string\", \"tempo\": \"string\", \"intensity\": \"string\", \"rpe\": \"string\", \"rest\": \"string\", \"cue\": \"string\"}]}]}. Athlete: " + selectedClient.full_name + ". Category: " + selectedClient.category + ". Sport: " + (selectedClient.sport || 'General') + ". Training age: " + (selectedClient.training_age || 'Unknown') + " years. Current program: " + (activeProgram ? activeProgram.method : 'No active program') + ". Phase: " + (activeProgram ? activeProgram.phase : 'General training') + ". Goal: " + (selectedClient.goal || 'General fitness') + ". Injury history: " + (selectedClient.injury_history || 'None') + ". Strength level: " + (selectedClient.strength_level || 'Intermediate') + ". Movement quality: " + (selectedClient.movement_quality || 'Good') + ". Day: " + getDayLabel(selectedDay) + ". Build 3 to 4 training blocks. Return only the JSON object, nothing else."
 
     try {
       const response = await fetch('/.netlify/functions/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
           system: SYSTEM_PROMPT,
           messages: [{ role: 'user', content: userPrompt }]
         })
       })
+
       const rawText = await response.text()
-console.log('Raw response:', rawText)
-const data = JSON.parse(rawText)
-console.log('API response:', JSON.stringify(data))
-const text = data.content && data.content[0] ? data.content[0].text : ''
-console.log('Text response:', text)
-if (!text) throw new Error('Empty response from API - data: ' + JSON.stringify(data))
-const jsonStart = text.indexOf('{')
-const jsonEnd = text.lastIndexOf('}')
-if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON found in response')
-const clean = text.substring(jsonStart, jsonEnd + 1)
-const parsed = JSON.parse(clean)
+      console.log('Raw response:', rawText)
+      const data = JSON.parse(rawText)
+      console.log('API response:', JSON.stringify(data))
+      const text = data.content && data.content[0] ? data.content[0].text : ''
+      console.log('Text response:', text)
+      if (!text) throw new Error('Empty response from API - data: ' + JSON.stringify(data))
+      const jsonStart = text.indexOf('{')
+      const jsonEnd = text.lastIndexOf('}')
+      if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON found in response')
+      const clean = text.substring(jsonStart, jsonEnd + 1)
+      const parsed = JSON.parse(clean)
       setSession(parsed)
       setActualData({})
       setSessionNotes('')
@@ -95,15 +94,6 @@ const parsed = JSON.parse(clean)
 
   function getInitials(name) {
     return name.split(' ').map(function(n) { return n[0] }).join('').substring(0, 2).toUpperCase()
-  }
-// eslint-disable-next-line no-unused-vars
-  const colorMap = {
-    amber: 'bg-amber-950 text-amber-400',
-    blue: 'bg-blue-950 text-blue-400',
-    green: 'bg-green-950 text-green-400',
-    red: 'bg-red-950 text-red-400',
-    purple: 'bg-purple-950 text-purple-400',
-    gray: 'bg-neutral-800 text-neutral-400'
   }
 
   const dotMap = {
