@@ -48,11 +48,13 @@ export default function SessionBuilder() {
           messages: [{ role: 'user', content: userPrompt }]
         })
       })
-      const data = await response.json()
+      const rawText = await response.text()
+console.log('Raw response:', rawText)
+const data = JSON.parse(rawText)
 console.log('API response:', JSON.stringify(data))
 const text = data.content && data.content[0] ? data.content[0].text : ''
 console.log('Text response:', text)
-if (!text) throw new Error('Empty response from API')
+if (!text) throw new Error('Empty response from API - data: ' + JSON.stringify(data))
 const jsonStart = text.indexOf('{')
 const jsonEnd = text.lastIndexOf('}')
 if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON found in response')
